@@ -29,7 +29,7 @@ app.get("/films-list", (req, res) => {
 });
 
 app.get("/city-items", (req, res) => {
-  const items = Array.from({ length: 25_000 }, (_, i) => ({
+  const items = Array.from({ length: 5_000 }, (_, i) => ({
     id: i,
     description: faker.lorem.paragraph(3),
     name: faker.location.city(),
