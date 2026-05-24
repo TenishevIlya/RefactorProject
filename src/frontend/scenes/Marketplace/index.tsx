@@ -1,17 +1,18 @@
-import React, { ReactElement, useCallback, useEffect, useState } from "react";
-import {
-  CardTitle,
-  Container,
-  Description,
-  Input,
-  InputContainer,
-} from "./styles";
+import React, {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
+import { Container } from "./styles";
 
-import { Card } from "antd";
+import { Spin } from "antd";
 
-import cityView from "./assets/city1.jpg";
+import { List } from "./components/List";
+import { SearchInput } from "./components/SearchInput";
 
-type CityItem = {
+export type CityItem = {
   id: number;
   description: string;
   name: string;
@@ -19,7 +20,12 @@ type CityItem = {
 
 export function Marketplace(): ReactElement {
   const [items, setItems] = useState<CityItem[]>([]);
-  const [inputValue, setInputValue] = useState("");
+  const [filteredItems, setFilteredItems] = useState<CityItem[]>([]);
+  const [isInProgress, setIsInProgress] = useTransition();
+
+  const handleLongAction = useCallback((action: () => void) => {
+    setIsInProgress(() => action());
+  }, []);
 
   useEffect(() => {
     const getFilms = async () => {
@@ -27,45 +33,35 @@ export function Marketplace(): ReactElement {
         method: "GET",
       })
         .then((res) => res.json())
-        .then((data) => setItems(data.items));
+        .then((data) => handleLongAction(() => setItems(data.items)));
     };
 
     getFilms();
   }, []);
 
-  const onInputChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
-      const value = event.target.value;
-      setInputValue(value);
-
-      const filtered = items.filter((item) =>
-        item.name.toLowerCase().includes(value.toLowerCase()),
-      );
-      setItems(filtered);
+  const filterItems = useCallback(
+    (filterValue: string) => {
+      handleLongAction(() => {
+        if (!filterValue) return setFilteredItems(items);
+        const filtered = items.filter((item) =>
+          item.name.toLowerCase().includes(filterValue.toLowerCase()),
+        );
+        setFilteredItems(filtered);
+      });
     },
     [items],
   );
+  const itemsToRender = filteredItems?.length > 0 ? filteredItems : items;
 
   return (
     <>
-      <InputContainer>
-        <Input
-          id="cityName"
-          value={inputValue}
-          placeholder="Type city name"
-          onChange={onInputChange}
-        />
-      </InputContainer>
-      <Container>
-        {items.map((value, index) => (
-          <Card
-            key={`${value.name}_${index}`}
-            cover={<img draggable={false} alt="example" src={cityView} />}
-          >
-            <CardTitle>{value.name}</CardTitle>
-            <Description>{value.description}</Description>
-          </Card>
-        ))}
+      <SearchInput onChangeCallback={filterItems} />
+      <Container $isLoading={isInProgress}>
+        {isInProgress ? (
+          <Spin description="Items are loading..." size="large" />
+        ) : (
+          <List itemsToRender={itemsToRender} />
+        )}
       </Container>
     </>
   );

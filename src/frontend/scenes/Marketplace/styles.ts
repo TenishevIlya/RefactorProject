@@ -1,28 +1,17 @@
-import styled from "styled-components";
-import { Input as BaseInput } from "antd";
+import styled, { css } from "styled-components";
 
-export const Container = styled.div`
+const GridLayout = css`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 `;
 
-export const InputContainer = styled.div`
+const LoadingLayout = css`
   display: flex;
   justify-content: center;
-  margin: 50px 0;
+  width: 100%;
 `;
 
-export const Input = styled(BaseInput)`
-  width: 200px;
-`;
-
-export const CardTitle = styled.p`
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-`;
-
-export const Description = styled.p`
-  margin: 30px 0 0;
+export const Container = styled.div<{ $isLoading: boolean }>`
+  ${(props) => (props.$isLoading ? LoadingLayout : GridLayout)}
 `;
