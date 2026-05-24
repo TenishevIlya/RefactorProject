@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import { faker } from "@faker-js/faker";
 const app = express();
 
 const FILM_IDS = {
@@ -25,6 +26,15 @@ app.use(cors());
 
 app.get("/films-list", (req, res) => {
   res.send({ list: films, status: 200 });
+});
+
+app.get("/city-items", (req, res) => {
+  const items = Array.from({ length: 25_000 }, (_, i) => ({
+    id: i,
+    description: faker.lorem.paragraph(3),
+    name: faker.location.city(),
+  }));
+  res.send({ items, status: 200 });
 });
 
 app.post("/book-seat", (req, res) => {
